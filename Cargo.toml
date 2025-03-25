@@ -1,0 +1,16 @@
+[package]
+name = "handball"
+version = "0.0.0"
+edition = "2021"
+
+[dependencies]
+rocket = { version = "=0.5.0-rc.3", features = ["json"] }
+openid = { version = "0.12", default-features = false, features = ["rustls"] }
+url = "2"
+anyhow = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+base64 = "0.21"
+
+[dev-dependencies]
+rstest = { version = "0.18", default-features = false }
