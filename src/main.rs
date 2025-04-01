@@ -1,86 +1,33 @@
-mod auth;
+use std::env;
+
+use rocket::State;
+use rocket::{Build, Rocket};
 
 #[macro_use]
 extern crate rocket;
 
-#[cfg(test)]
-#[macro_use]
-extern crate rstest;
+mod assets;
+mod state;
+mod view;
 
-use crate::auth::{OpenIDClient, User};
-use anyhow::anyhow;
-use openid::Options;
-use rocket::{
-    fs::FileServer, fs::NamedFile, http::Status, response::Redirect, serde::Serialize, Either,
-    State,
-};
-use serde::Deserialize;
+#[launch]
+fn rocket() -> _ {
+    env::set_var("ROCKET_port", "12500");
+    env::set_var("ROCKET_address", "0.0.0.0");
 
-#[derive(Debug, Copy, Clone, Default, Eq, PartialEq, Hash, Serialize, Deserialize)]
-#[serde(rename_all = "lowercase")]
-enum Environment {
-    #[default]
-    Prod,
-    Test,
+    let rocket = rocket::build();
+
+    mount(rocket)
 }
 
-impl Environment {
-    fn from_env() -> anyhow::Result<Self> {
-        match std::env::var("STAGE")?.to_lowercase().as_ref() {
-            "prod" => Ok(Self::Prod),
-            "test" => Ok(Self::Test),
-            name => Err(anyhow!("unknown environment: {name}")),
-        }
-    }
-}
+pub type ServerState = State<state::_State>;
 
-#[rocket::main]
-async fn main() -> Result<(), rocket::Error> {
-    rocket::build()
-        .manage(Environment::from_env().unwrap_or_default())
-        .attach(auth::fairing())
-        .mount(
-            "/",
-            routes![index, auth::finalize, auth::accept_invite, error_page],
-        )
-        .register("/", catchers![not_found])
-        .launch()
-        .await
-        .map(|_| ())
-}
-
-#[get("/")]
-async fn index(
-    user: Option<User>,
-    oidc_client: &State<OpenIDClient>,
-    oidc_options: &State<Options>,
-) -> Result<Either<Redirect, NamedFile>, Status> {
-    if user.is_none() {
-        let url = oidc_client.auth_url(oidc_options).to_string();
-        return Ok(Either::Left(Redirect::to(url)));
-    };
-    NamedFile::open("dist/index.html")
-        .await
-        .map(Either::Right)
-        .map_err(|err| {
-            error!("Cannot open index file: {err}");
-            Status::InternalServerError
-        })
-}
-
-#[get("/error/<_page>")]
-async fn error_page(_page: &str) -> Result<NamedFile, (Status, &'static str)> {
-    frontend().await
-}
-
-#[catch(404)]
-async fn not_found() -> Result<NamedFile, (Status, &'static str)> {
-    frontend().await
-}
-
-async fn frontend() -> Result<NamedFile, (Status, &'static str)> {
-    NamedFile::open("dist/index.html").await.map_err(|err| {
-        error!("Cannot open index file: {err}");
-        (Status::NotFound, "Not found")
-    })
+fn mount(rocket: Rocket<Build>) -> Rocket<Build> {
+    let (assets_path, asset_routes) = assets::api();
+    let (body_path, body_routes) = view::api();
+    let state = state::initial_state();
+    rocket
+        .mount(assets_path, asset_routes)
+        .mount(body_path, body_routes)
+        .manage(state)
 }
