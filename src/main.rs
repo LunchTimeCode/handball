@@ -12,8 +12,10 @@ mod view;
 
 #[launch]
 fn rocket() -> _ {
-    env::set_var("ROCKET_port", "12500");
-    env::set_var("ROCKET_address", "0.0.0.0");
+    unsafe {
+        env::set_var("ROCKET_port", "12500");
+        env::set_var("ROCKET_address", "0.0.0.0");
+    }
 
     let rocket = rocket::build();
 

@@ -1,5 +1,5 @@
-use maud::{html, Markup};
-use rocket::{response::content, Route};
+use maud::{Markup, html};
+use rocket::{Route, response::content};
 
 mod header;
 
@@ -28,7 +28,7 @@ fn title(title: impl Into<String>) -> Markup {
 }
 
 pub mod frontend {
-    use maud::{html, Markup, PreEscaped};
+    use maud::{Markup, PreEscaped, html};
 
     const HTMX: &str = r#"<script src="/_assets/htmx.js"></script>"#;
     const DAISY: &str = r#"<link  href="/_assets/daisy.css" rel="stylesheet" type="text/css">"#;

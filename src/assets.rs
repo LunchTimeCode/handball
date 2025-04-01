@@ -1,9 +1,9 @@
-use include_directory::{include_directory, Dir, File};
-use rocket::{get, http::ContentType, routes, Route};
+use include_directory::{Dir, File, include_directory};
+use rocket::{Route, get, http::ContentType, routes};
 use std::path::Path;
 
 #[get("/<asset>")]
-fn assets(asset: &str) -> (ContentType, Vec<u8>) {
+pub fn assets(asset: &str) -> (ContentType, Vec<u8>) {
     let file = read_any_file(asset);
     let bytes = file.contents();
 
