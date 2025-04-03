@@ -1,6 +1,8 @@
+use ::grid::Grid;
 use maud::{Markup, html};
 use rocket::{Route, response::content};
 
+mod components;
 mod header;
 
 pub fn page(markup: Markup) -> Markup {
@@ -33,6 +35,7 @@ pub mod frontend {
     const HTMX: &str = r#"<script src="/_assets/htmx.js"></script>"#;
     const DAISY: &str = r#"<link  href="/_assets/daisy.css" rel="stylesheet" type="text/css">"#;
     const TAIL: &str = r#"<script src="/_assets/tail.js"></script>"#;
+    const EDITOR: &str = r#"<script src="/_assets/editor.js"></script>"#;
     const DAISY_THEMES: &str =
         r#"<link  href="/_assets/themes.css" rel="stylesheet" type="text/css">"#;
 
@@ -42,6 +45,7 @@ pub mod frontend {
         (PreEscaped(TAIL))
         (PreEscaped(DAISY))
         (PreEscaped(DAISY_THEMES))
+        (PreEscaped(EDITOR))
            }
     }
 }
@@ -57,13 +61,11 @@ fn body_m() -> Markup {
          header {
              (header::header())
          }
-         main id="main_target"{
 
-            div id="main" {
+         div .editor {}
 
-            }
+             script src="/_assets/editor_hook.js" {}
 
-         }
 
         }
     }
