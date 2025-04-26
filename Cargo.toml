@@ -5,7 +5,7 @@ edition = "2024"
 
 [dependencies]
 rocket = { version = "=0.5.0-rc.3", features = ["json"] }
-openid = { version = "0.12", default-features = false, features = ["rustls"] }
+openid = { version = "0.17", default-features = false, features = ["rustls"] }
 url = "2"
 anyhow = "1"
 base64 = "0.21"
